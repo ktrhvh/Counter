@@ -1,47 +1,74 @@
 import UIKit
 
-class ViewController: UIViewController {
+final class ViewController: UIViewController {
     
-    @IBOutlet weak var counterLabel: UILabel!
-    @IBOutlet weak var historyTextView: UITextView!
+    // MARK: - IBOutlets
     
-    var counter = 0
+    @IBOutlet private weak var counterLabel: UILabel!
+    @IBOutlet private weak var historyTextView: UITextView!
+    
+    // MARK: - Properties
+    
+    private var counter = 0
+    private let historyTitle = "История изменений:"
+    private let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
+        return formatter
+    }()
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        counterLabel.text = "Значение счётчика: 0"
-        historyTextView.text = "История изменений:"
-        historyTextView.isEditable = false
+        setupUI()
+        updateCounterLabel()
     }
     
-    @IBAction func incrementTapped(_ sender: UIButton) {
+    // MARK: - Actions
+    
+    @IBAction private func incrementTapped(_ sender: UIButton) {
         counter += 1
-        counterLabel.text = "Значение счётчика: \(counter)"
+        updateCounterLabel()
         addHistory("значение изменено на +1")
     }
     
-    @IBAction func decrementTapped(_ sender: UIButton) {
+    @IBAction private func decrementTapped(_ sender: UIButton) {
         if counter > 0 {
             counter -= 1
-            counterLabel.text = "Значение счётчика: \(counter)"
+            updateCounterLabel()
             addHistory("значение изменено на -1")
         } else {
             addHistory("попытка уменьшить значение счётчика ниже 0")
         }
     }
     
-    @IBAction func resetTapped(_ sender: UIButton) {
+    @IBAction private func resetTapped(_ sender: UIButton) {
         counter = 0
-        counterLabel.text = "Значение счётчика: 0"
+        updateCounterLabel()
         addHistory("значение сброшено")
     }
     
-    func addHistory(_ event: String) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
+    // MARK: - Private Methods
+    
+    private func setupUI() {
+        historyTextView.text = historyTitle
+        historyTextView.isEditable = false
+    }
+    
+    private func updateCounterLabel() {
+        counterLabel.text = "Значение счётчика: \(counter)"
+    }
+    
+    private func addHistory(_ event: String) {
         let date = formatter.string(from: Date())
         let newEntry = "[\(date)]: \(event)\n"
-        let currentText = historyTextView.text ?? ""
-        historyTextView.text = "История изменений:\n" + newEntry + currentText.replacingOccurrences(of: "История изменений:\n", with: "")
+        historyTextView.text += "\n" + newEntry
+        scrollToBottom()
+    }
+    
+    private func scrollToBottom() {
+        let range = NSRange(location: historyTextView.text.count - 1, length: 1)
+        historyTextView.scrollRangeToVisible(range)
     }
 }
